@@ -22,7 +22,7 @@ const server = http.createServer((req, res) => {
     });
 
   // this launches the executable and returns immediately
-  var child = execFile("nasal-interpreter/nasal", ["-t", "-d", "nasal-interpreter/test/exception.nas"],
+  var child = execFile("nasal-interpreter/nasal", ["-t", "-d", "nasal-interpreter/test/ascii-art.nas"],
     function (error, stdout, stderr) {
       // This callback is invoked once the child terminates
       // You'd want to check err/stderr as well!
