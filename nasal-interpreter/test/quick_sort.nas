@@ -1,25 +1,37 @@
-import("lib.nas");
-var sort=func(vec,left,right)
-{
-    if(left>=right) return;
-    var (L,R,tmp)=(left,right,vec[left]);
-    while(left<right)
-    {
-        while(left<right and tmp<=vec[right])
-            right-=1;
-        while(left<right and tmp>=vec[left])
-            left+=1;
-        if(left!=right)
-            (vec[left],vec[right])=(vec[right],vec[left]);
-    }
-    (vec[L],vec[left])=(vec[left],tmp);
-    sort(vec,L,left-1);
-    sort(vec,left+1,R);
-    return;
-}
+import.stl.sort;
+
 var vec=[];
 rand(time(0));
 for(var i=0;i<1e4;i+=1)
     append(vec,int(rand()*1e5));
-sort(vec,0,size(vec)-1);
-println(vec);
+sort(vec);
+for(var i=1;i<1e4;i+=1) {
+    if (vec[i]<vec[i-1]) {
+        die("incorrect sort result");
+    }
+}
+
+var test=func(n){
+    var a=[];
+    setsize(a,n);
+    for(var i=0;i<n;i+=1){
+        a[i]=int(rand()*n);
+    }
+    var ts=maketimestamp();
+    ts.stamp();
+    var_sort(a);
+    println("[time] ",str(n)," in ",ts.elapsedMSec()/1000," sec (value)");
+
+    var a=[];
+    setsize(a,n);
+    for(var i=0;i<n;i+=1){
+        a[i]=int(rand()*n);
+    }
+    ts.stamp();
+    sort(a);
+    println("[time] ",str(n)," in ",ts.elapsedMSec()/1000," sec (lambda)");
+}
+
+for(var i=1000;i<1e6;i*=10){
+    test(i);
+}
