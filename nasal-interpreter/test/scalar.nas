@@ -1,5 +1,4 @@
 # basic type
-import("lib.nas");
 nil;
 2147483647;
 0x7fffffff;
@@ -150,3 +149,83 @@ f1() or f2();
 # this means that when using 'or' or 'and',
 # if the result is clear when calculating,
 # objects behind will not be calculated
+
+print(
+    subvec([0,1,2,3],2),'\n',
+    subvec([0,1,2,3],2,1),'\n',
+    abs(1),'\n',
+    abs(-1),'\n',
+    systime(),'\n',
+    isfunc(func{}),' ',isfunc([]),'\n',
+    ishash({}),' ',ishash([]),'\n',
+    isint(114.514),' ',isint(114514),'\n',
+    isnum("0xaa55"),' ',isnum("?"),'\n',
+    isscalar(0.618),' ',isscalar("hello"),' ',isscalar([]),'\n',
+    isstr("hello"),' ',isstr(func{}),'\n',
+    isvec([]),' ',isvec("[]"),'\n',
+    vecindex([0,1,2,3,4],1),'\n',
+    vecindex(["apple","banana"],"apple")!=nil,'\n'
+);
+
+println(values({
+    a:1,
+    b:2,
+    c:3
+}));
+println(find("cd", "abcdef")); # prints 2
+println(find("x", "abcdef"));  # prints -1
+println(find("cd", "abcdef")); # prints 2
+
+var a={
+    new: func(x=0){
+        return {
+            x:x,
+            parents:[a]
+        };
+    },
+    new2: func(x=0){
+        return {
+            x:x,
+            parents:a
+        };
+    }
+};
+println(isa(a.new(),a)); # 1
+println(isa(a.new2(),a));# 0
+
+var a=[10,-10,0,1,2,3,nil,"string","hello",[],[0,1,2,3],{},{a:0,b:1,c:2},func{}];
+println("type\tsize\tnum\tsrc");
+foreach(var i;a){
+    println(typeof(i),'\t',size(i),'\t',num(i),'\t',i);
+}
+foreach(i;a){
+    ;
+}
+println(runtime.argv());
+func(a,b,c,d="只有红茶可以吗"){
+    println(a,' ',b,' ',c,' ',d,' true: ',true,' false: ',false);
+}(c:1919810,b:514,a:114);
+
+# test binary negation
+println("~ 0x80: ",~0x80);
+println("~ 0x8000: ",~0x8000);
+println("~ 0x80000000: ",~0x80000000);
+println("~ 0x8000000000000000: ",~0x8000000000000000);
+println(~0x80000000==~0x8000000000000000);
+
+var h=split(" ","0 1 2 3 4 5 6 7 8 9 a b c d e f");
+for(var a=0;a<16;a+=1) {
+    for(var b=0;b<16;b+=1) {
+        for(var c=0;c<16;c+=1) {
+            if(((a^b)&c)!=(a^(b&c))) {
+                println("0x"~h[a],"^","0x"~h[b],"&","0x"~h[c]," -> a^b&c = 0x",h[a^b&c]," (a^b)&c = 0x",h[(a^b)&c]," a^(b&c) = 0x",h[(a^(b&c))]);
+            }
+        }
+    }
+}
+for(var a=0;a<16;a+=1) {
+    for(var b=0;b<16;b+=1) {
+        var temp=b;
+        println("temp^=0x"~h[a]~" -> 0x",h[temp^=a]," temp&=0x"~h[a]~" -> 0x",h[temp&=a]," temp|=0x"~h[a]~" -> 0x",h[temp|=a]);
+    }
+}

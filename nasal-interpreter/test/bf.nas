@@ -1,5 +1,3 @@
-import("lib.nas");
-
 var mandelbrot=
 "[A mandelbrot set fractal viewer in brainf*** written by Erik Bosman]
 +++++++++++++[->++>>>+++++>++>+<<<<<<]>>>>>++++++>--->>>>>>>>>>+++++++++++++++[[
@@ -147,82 +145,101 @@ var mandelbrot=
 +[-[->>>>>>>>>+<<<<<<<<<]>>>>>>>>>]>>>>>->>>>>>>>>>>>>>>>>>>>>>>>>>>-<<<<<<[<<<<
 <<<<<]]>>>]";
 
-var paper=[];
-var (ptr,pc)=(0,0);
-var (code,inum,stack)=([],[],[]);
-var (add,mov,jt,jf,in,out)=(0,1,2,3,4,5);
+var (ptr,pc,paper,inum)=(0,0,[],[]);
 
-var funcs=[
-    func{paper[ptr]+=inum[pc];},
-    func{ptr+=inum[pc];},
-    func{if(paper[ptr])pc=inum[pc];},
-    func{if(!paper[ptr])pc=inum[pc];},
-    func{paper[ptr]=input()[0];},
-    func{print(chr(paper[ptr]));}
-];
+var character=func() {
+    var res=[];
+    setsize(res,256);
+    forindex(var i;res) {
+        res[i]="\e[38;5;"~i~"m"~chr(i)~"\e[0m";
+    }
+    return res;
+}();
 
-var bf=func(program){
-    setsize(paper,131072);
+var (add,mov,jt,jf,in,out)=(
+    func {paper[ptr]+=inum[pc];},
+    func {ptr+=inum[pc];},
+    func {if(paper[ptr])pc=inum[pc];},
+    func {if(!paper[ptr])pc=inum[pc];},
+    func {paper[ptr]=input()[0];},
+    func {print(character[paper[ptr]]);}
+);
+
+var codegen=func(program) {
+    var (code,stack)=([],[]);
     var len=size(program);
-    for(var i=0;i<len;i+=1){
+    for(var i=0;i<len;i+=1) {
         var c=chr(program[i]);
-        if(c=='+' or c=='-'){
+        if(c=='+' or c=='-') {
             append(code,add);
             append(inum,0);
-            for(;i<len;i+=1){
-                if(chr(program[i])=='+')
+            for(;i<len;i+=1) {
+                if(chr(program[i])=='+') {
                     inum[-1]+=1;
-                elsif(chr(program[i])=='-')
+                } elsif(chr(program[i])=='-') {
                     inum[-1]-=1;
-                elsif(chr(program[i])!='\n'){
+                } elsif(chr(program[i])!='\n') {
                     i-=1;
                     break;
                 }
             }
-        }
-        elsif(c=='<' or c=='>'){
+        } elsif(c=='<' or c=='>') {
             append(code,mov);
             append(inum,0);
             for(;i<len;i+=1){
-                if(chr(program[i])=='>')
+                if(chr(program[i])=='>') {
                     inum[-1]+=1;
-                elsif(chr(program[i])=='<')
+                } elsif(chr(program[i])=='<') {
                     inum[-1]-=1;
-                elsif(chr(program[i])!='\n'){
+                } elsif(chr(program[i])!='\n') {
                     i-=1;
                     break;
                 }
             }
-        }
-        elsif(c==','){
+        } elsif(c==',') {
             append(code,in);
             append(inum,0);
-        }
-        elsif(c=='.'){
+        } elsif(c=='.') {
             append(code,out);
             append(inum,0);
-        }
-        elsif(c=='['){
+        } elsif(c=='[') {
             append(code,jf);
             append(inum,0);
             append(stack,size(code)-1);
-        }
-        elsif(c==']'){
-            if(!size(stack))
+        } elsif(c==']') {
+            if(!size(stack)) {
                 die("lack [");
+            }
             var label=pop(stack);
             append(code,jt);
             append(inum,label-1);
             inum[label]=size(code)-2;
         }
     }
-    if(size(stack)){
-        die("lack ]");
+
+    if(size(stack)) {
+        die("lack "~size(stack)~" \"]\"");
         return;
     }
-    len=size(code);
-    for(pc=0;pc<len;pc+=1)
-        funcs[code[pc]]();
+
+    return code;
+}
+
+var bf=func(program) {
+    # enable ANSI escape sequence
+    if(os.platform()=="windows") {
+        system("color");
+    }
+
+    # code generation
+    var code=codegen(program);
+
+    # execute
+    setsize(paper,131072);
+    var len=size(code);
+    for(pc=0;pc<len;pc+=1) {
+        code[pc]();
+    }
     return;
 }
 
