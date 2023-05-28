@@ -1,7 +1,6 @@
-# lib list.nas
+# list.nas
 # valkmjolnir 2021/3/31
-var list=func()
-{
+var list=func(){
     var (begin,end)=(nil,nil);
     return{
         push_back:func(elem){
