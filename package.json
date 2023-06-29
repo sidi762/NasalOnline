@@ -1,0 +1,11 @@
+{
+  "name": "nasal_online",
+  "version": "0.0.1",
+  "description": "Nasal Online Playground",
+  "author": "Sidi Liang <sidi.liang@gmail.com>",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {}
+}
