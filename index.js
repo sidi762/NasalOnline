@@ -13,8 +13,8 @@ const server = http.createServer((req, res) => {
   var execFile = require('child_process').execFile
 
   // this launches the executable and returns immediately
-  var info = execFile("nasal-interpreter/nasal", ["-v"],
-    function (error, stdout, stderr) {
+  var info = execFile("nasal", ["-v"],
+    function(error, stdout, stderr) {
       // This callback is invoked once the child terminates
       // You'd want to check err/stderr as well!
       res.write(stdout);
@@ -23,7 +23,7 @@ const server = http.createServer((req, res) => {
 
   // this launches the executable and returns immediately
   var child = execFile("nasal-interpreter/nasal", ["-t", "-d", "nasal-interpreter/test/ascii-art.nas"],
-    function (error, stdout, stderr) {
+    function(error, stdout, stderr) {
       // This callback is invoked once the child terminates
       // You'd want to check err/stderr as well!
       console.log("Output and error(s): ");
