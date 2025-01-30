@@ -1,0 +1,3 @@
+[submodule "lib/nasal-interpreter"]
+	path = lib/nasal-interpreter
+	url = https://github.com/sidi762/Nasal-Interpreter.git
