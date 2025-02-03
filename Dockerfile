@@ -1,31 +1,39 @@
-FROM node:18
+# Use the official Ubuntu image to build the C++ interpreter
+FROM ubuntu:22.04
 
-# Build Nasal
-RUN apt-get update
-RUN apt-get install -y git cmake gcc g++
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    apt-get install -y --no-install-recommends libstdc++6 seccomp && \
+    apt-get install -y --no-install-recommends python3 make g++ cmake&& \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/ValKmjolnir/Nasal-Interpreter.git
+# Set the working directory
+WORKDIR /app/nasal-web-app
 
-RUN cd Nasal-Interpreter && mkdir build && cd build && cmake .. && make -j
-RUN echo "export PATH=/Nasal-Interpreter:$PATH" >> ./root/.bashrc
+# Copy the Nasal interpreter source code
+COPY ./lib/nasal-interpreter /app/nasal-interpreter
 
-WORKDIR /usr/src/app
+# Build the Nasal interpreter using CMake
+WORKDIR /app/nasal-interpreter
+RUN mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON . && cmake --build . && make all
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
+RUN addgroup --system --gid 1001 sandbox && \
+adduser --system --uid 1001 --ingroup sandbox sandbox
 
+# Set the working directory for the backend
+WORKDIR /app/nasal-web-app/
+
+# Copy backend files
+COPY --chown=sandbox:sandbox /app/nasal-web-app /app/nasal-web-app
 RUN npm install
-# If you are building your code for production
-# RUN npm ci --omit=dev
 
-# Bundle app source
-COPY . .
+# Expose the port the app runs on
+EXPOSE 3000
 
+USER sandbox
 
-# CMD ./Nasal-Interpreter/nasal
-
-
-EXPOSE 8080
-CMD [ "node", "index.js" ]
+# Start the backend server
+CMD ["node", "/app/nasal-web-app/server.js"]
