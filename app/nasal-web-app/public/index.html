@@ -1,0 +1,305 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Nasal在线解释器 - FGPRC</title>
+    <meta name="description" content="Nasal解释器">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Google Analytics and Ads -->
+
+    <!-- Header/Footer Include -->
+    <script src="https://gcdn.fgprc.org.cn/js/vendor/jquery-1.12.4.min.js"></script>
+    <script>
+    $(function(){
+      $("#includedContentHeader").load("header.html");
+      $("#includedContentFooter").load("footer.html");
+    });
+    </script>
+
+    <!-- FGPRC CSS -->
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/magnific-popup.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/themify-icons.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/nice-select.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/flaticon.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/gijgo.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/animate.min.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/slick.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/slicknav.css">
+    <link rel="stylesheet" href="https://gcdn.fgprc.org.cn/css/style.css">
+
+    <!-- CodeMirror CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header Include -->
+    <div id="includedContentHeader"></div>
+
+   <div class="container">
+       <div class="header">
+           <div class="logo">
+               <pre class="ascii-art">
+      __                _
+   /\ \ \__ _ ___  __ _| |
+  /  \/ / _` / __|/ _` | |
+ / /\  / (_| \__ \ (_| | |
+ \_\ \/ \__,_|___/\__,_|_|
+               </pre>
+           </div>
+           <h1>Nasal Web Interpreter </h1>
+           <p class="subtitle">Write and execute Nasal code directly in your browser</p>
+           <div class="credits">
+               <div class="credit-item">
+                   <span class="credit-label">Powered by</span>
+                   <a href="https://www.fgprc.org.cn/nasal_interpreter.html" class="credit-link">
+                       <span class="highlight">Nasal Interpreter</span>
+                       <span class="author">by ValKmjolnir</span>
+                   </a>
+               </div>
+               <div class="credit-item">
+                   <span class="credit-label">Web App by</span>
+                   <a href="https://sidi762.github.io" class="credit-link">
+                       <span class="highlight">LIANG Sidi</span>
+                   </a>
+               </div>
+           </div>
+       </div>
+
+    <!-- Editor Area -->
+    <div class="editor_area">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-12" style="padding-left:0; padding-right:0">
+                    <!-- Editor Container -->
+                    <div class="editor-container">
+                        <div class="code-section">
+                            <h2 style="color:white">Code Editor</h2>
+                            <textarea id="code">var x = 1 + 2;
+println(x);</textarea>
+                        </div>
+                        <div class="output-section">
+                            <div class="output-header">
+                                <h2>Output</h2>
+                                <div id="status"></div>
+                            </div>
+                            <div id="output"></div>
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="controls text-center">
+                        <button id="runBtn" onclick="runCode()">Run</button>
+                        <button onclick="clearOutput()">Clear Output</button>
+                        <label class="timing-checkbox">
+                            <input type="checkbox" id="showTime"> Show execution time
+                        </label>
+                    </div>
+
+                    <!-- Examples -->
+                    <div class="examples text-center mt-5">
+                        <h3 style="color: white;">Examples:</h3>
+                        <button class="example-btn" onclick="loadExample('basic')">Basic Math</button>
+                        <button class="example-btn" onclick="loadExample('loops')">Loops</button>
+                        <button class="example-btn" onclick="loadExample('functions')">Functions</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Include -->
+    <div id="includedContentFooter"></div>
+
+    <!-- FGPRC JS -->
+    <script src="https://gcdn.fgprc.org.cn/js/vendor/modernizr-3.5.0.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/popper.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/bootstrap.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/owl.carousel.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/isotope.pkgd.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/ajax-form.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/waypoints.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/jquery.counterup.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/imagesloaded.pkgd.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/scrollIt.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/jquery.scrollUp.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/wow.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/nice-select.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/jquery.slicknav.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/jquery.magnific-popup.min.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/plugins.js"></script>
+    <script src="https://gcdn.fgprc.org.cn/js/gijgo.min.js"></script>
+
+    <script src="https://gcdn.fgprc.org.cn/js/main.js"></script>
+
+    <!-- CodeMirror and Editor JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script>
+        // Initialize CodeMirror
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true,
+            mode: "javascript", // Using JavaScript mode as it's close enough to Nasal
+            theme: "monokai",
+            autoCloseBrackets: true,
+            matchBrackets: true,
+            indentUnit: 4,
+            tabSize: 4,
+            lineWrapping: true
+        });
+
+        // Example programs
+        const examples = {
+            basic: `# Basic math operations
+var a = 10;
+var b = 5;
+
+println("Addition: ", a + b);
+println("Subtraction: ", a - b);
+println("Multiplication: ", a * b);
+println("Division: ", a / b);`,
+
+            loops: `# Loop example
+var sum = 0;
+for(var i = 1; i <= 5; i += 1) {
+    sum += i;
+    println("Current sum: ", sum);
+}
+println("Final sum: ", sum);`,
+
+            functions: `# Function example
+var factorial = func(n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+
+for(var i = 0; i <= 5; i += 1) {
+    println("Factorial of ", i, " is ", factorial(i));
+}`
+        };
+
+        function loadExample(type) {
+            editor.setValue(examples[type]);
+        }
+
+        function formatTerminalOutput(text) {
+            // Remove the output/error message header if present
+            text = text.replace(/^\[(.*?)\] (Output|Error):\s*\n/, '');
+
+            // Convert ANSI color codes to CSS classes
+            const colorMap = {
+                '\u001b[91;1m': '<span class="terminal-red-bold">',    // bright red bold
+                '\u001b[36;1m': '<span class="terminal-cyan-bold">',   // bright cyan bold
+                '\u001b[0m': '</span>',                                // reset
+                '\u001b[1m': '<span class="terminal-bold">'           // bold
+            };
+
+            // Replace ANSI codes with HTML spans
+            Object.entries(colorMap).forEach(([code, html]) => {
+                text = text.replace(new RegExp(escapeRegExp(code), 'g'), html);
+            });
+
+            // Preserve whitespace and arrow formatting
+            text = text.replace(/\^/g, '<span class="terminal-caret">^</span>');
+
+            return text;
+        }
+
+        // Utility function to escape special characters in strings for RegExp
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function formatErrorMessage(text) {
+            // Replace ANSI escape codes with CSS classes
+            return text
+                // Remove any existing formatting first
+                .replace(/\u001b\[\d+(?:;\d+)*m/g, '')
+                // Format the error line
+                .replace(/^parse: (.+)$/m, '<span class="error-type">parse:</span> <span class="error-desc">$1</span>')
+                // Format the file location
+                .replace(/^\s*--> (.+?)(\d+):(\d+)$/m, '<span class="error-arrow">--></span> <span class="error-file">$1</span><span class="error-loc">$2:$3</span>')
+                // Format the code line
+                .replace(/^(\d+ \|)(.*)$/m, '<span class="error-line-number">$1</span><span class="error-code">$2</span>')
+                // Format the error pointer
+                .replace(/^(\s*\|)(\s*)(\^+)$/m, '<span class="error-line-number">$1</span><span class="error-pointer-space">$2</span><span class="error-pointer">$3</span>');
+        }
+
+        async function runCode() {
+            const runBtn = document.getElementById('runBtn');
+            const output = document.getElementById('output');
+            const status = document.getElementById('status');
+            const showTime = document.getElementById('showTime').checked;
+
+            try {
+                runBtn.disabled = true;
+                const code = editor.getValue();
+
+                const response = await fetch('/eval', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        code,
+                        showTime
+                    })
+                });
+
+                const data = await response.json();
+                const timestamp = new Date().toLocaleTimeString();
+
+                if (data.error) {
+                    status.innerHTML = '<span class="status-indicator status-error"></span>';
+                    output.innerHTML += `<div class="message error-message">
+                        <span class="timestamp">[${timestamp}]</span>
+                        <pre class="terminal-output">${formatErrorMessage(data.error)}</pre>
+                    </div>`;
+                } else {
+                    status.innerHTML = '<span class="status-indicator status-success"></span>';
+                    output.innerHTML += `<div class="message success-message">
+                        <span class="timestamp">[${timestamp}]</span>
+                        <pre class="terminal-output">${data.result.trim()}</pre>
+                    </div>`;
+                }
+
+                output.scrollTop = output.scrollHeight;
+            } catch (err) {
+                status.innerHTML = '<span class="status-indicator status-error"></span>';
+                output.innerHTML += `<div class="message error-message">
+                    <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                    <pre class="terminal-output">Server Error: ${err.message}</pre>
+                </div>`;
+            } finally {
+                runBtn.disabled = false;
+            }
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+            document.getElementById('status').innerHTML = '';
+        }
+
+        // Utility function to escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
+</body>
+</html>
