@@ -17,8 +17,12 @@ This project is based on:
 
 Use this command to build from `Dockerfile`.
 
-> docker build -t nasal-online/ubuntu:v1 .
+> docker build -t nasal-online .
+
+Run:
+
+> docker run -p 3000:3000 nasal-online
 
 Then if want to debug by using `/bin/bash`, try this:
 
-> docker run -it nasal-online/ubuntu:v1 /bin/bash
+> docker run -it nasal-online /bin/bash
