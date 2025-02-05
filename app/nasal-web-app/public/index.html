@@ -1,10 +1,28 @@
+<!--
+    Nasal Web Interpreter - A web-based interface for the Nasal programming language
+    Copyright (C) 2025 LIANG Sidi
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+-->
 <!doctype html>
 <html class="no-js" lang="zxx">
 
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Nasal在线解释器 - FGPRC</title>
+    <title>Nasal Online Interpreter - FGPRC</title>
     <meta name="description" content="Nasal解释器">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -55,8 +73,11 @@
  \_\ \/ \__,_|___/\__,_|_|
                </pre>
            </div>
-           <h1>Nasal Web Interpreter </h1>
+           <h1>Nasal Web Interpreter (Alpha)</h1>
            <p class="subtitle">Write and execute Nasal code directly in your browser</p>
+           <p style="color:white">Notice: This interpreter is NOT based on the FlightGear built-in Nasal interpreter. </p>
+           <p style="color:white">For the time being many FlightGear-specific features are not supported.</p>
+           <p style="color:white">This is an alpha version. Things may break. Please do not abuse the server. If you encounter any issues, please report them to sidi.liang@gmail.com.</p>
            <div class="credits">
                <div class="credit-item">
                    <span class="credit-label">Powered by</span>
@@ -266,9 +287,14 @@ for(var i = 0; i <= 5; i += 1) {
                     </div>`;
                 } else {
                     status.innerHTML = '<span class="status-indicator status-success"></span>';
+                    // easter egg
+                    let result = data.result.trim();
+                    if (code.includes('陈逸菲')) {
+                        result += '\n❤️❤️❤️爱你！——lsd';
+                    }
                     output.innerHTML += `<div class="message success-message">
                         <span class="timestamp">[${timestamp}]</span>
-                        <pre class="terminal-output">${data.result.trim()}</pre>
+                        <pre class="terminal-output">${result}</pre>
                     </div>`;
                 }
 
