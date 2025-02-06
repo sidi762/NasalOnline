@@ -24,6 +24,8 @@ const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const koffi = require('koffi');
 
+const inAlphaTesting = true;
+
 // Parse command line arguments
 const argv = yargs(hideBin(process.argv))
     .usage('Usage: $0 [options]')
@@ -45,7 +47,7 @@ const argv = yargs(hideBin(process.argv))
     })
     .help()
     .alias('help', 'h')
-    .version()
+    .version('0.0.1')
     .argv;
 
 const app = express();
@@ -110,5 +112,5 @@ const PORT = argv.port || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Visit http://localhost:${PORT} to use the Nasal interpreter`);
-    if (argv.verbose) console.log('Verbose logging enabled');
+    if (argv.verbose || inAlphaTesting) console.log('Verbose logging enabled');
 }); 
