@@ -111,6 +111,8 @@ app.post('/eval', (req, res) => {
 const PORT = argv.port || 3000;
 app.listen(PORT, () => {
     console.log('Nasal Web Interpreter Version' + argv.version);
+    // Print system date and time, precise to the second
+    console.log('System date and time: ' + new Date().toLocaleString());
     console.log(`Server running on port ${PORT}`);
     console.log(`Visit http://localhost:${PORT} to use the Nasal interpreter`);
     if (inAlphaTesting) {
