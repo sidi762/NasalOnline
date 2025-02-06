@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   nasal-online:
-    image: sidi762/nasal-online
+    image: sidi762/nasal-online:latest
     container_name: nasal-online
     restart: unless-stopped
     ports:
@@ -16,4 +14,4 @@ services:
       - no-new-privileges
     cap_drop:
       - ALL
-    pids_limit: 100
+    # pids_limit: 100
