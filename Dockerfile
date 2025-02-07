@@ -1,5 +1,5 @@
 # Build stage
-FROM ubuntu:22.04 AS builder
+FROM debian:stable-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && \
@@ -19,27 +19,25 @@ RUN mkdir build && \
     make all
 
 # Runtime stage
-FROM ubuntu:22.04
+FROM node:23-bookworm-slim
 
 # Install runtime dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    curl \
     python3 \
     libstdc++6 \
     seccomp && \
-    curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt-get install -y --no-install-recommends nodejs && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* 
 
 # Create non-root user
 RUN addgroup --system --gid 1001 sandbox && \
     adduser --system --uid 1001 --ingroup sandbox sandbox
+    adduser --system --uid 1001 --ingroup sandbox sandbox
 
 # Set up application
 WORKDIR /app/nasal-web-app
-COPY --from=builder /app/nasal-interpreter/build /app/nasal-interpreter/build
+COPY --from=builder /app/nasal-interpreter/ /app/nasal-interpreter/
 COPY --chown=sandbox:sandbox /app/nasal-web-app .
 RUN npm ci --only=production
 
