@@ -73,6 +73,8 @@ try {
     process.exit(1);
 }
 
+const TIMEOUT_MS = 5000; // 5 seconds timeout
+
 app.post('/eval', (req, res) => {
     const { code, showTime = false } = req.body;
     if (!code) {
@@ -85,27 +87,47 @@ app.post('/eval', (req, res) => {
     }
 
     const ctx = nasalLib.nasal_init();
-    try {
-        const result = nasalLib.nasal_eval(ctx, code, showTime ? 1 : 0);
-        const error = nasalLib.nasal_get_error(ctx);
-        
-        if (error && error !== 'null') {
-            if (argv.verbose) console.log('Nasal error:', error);
-            res.json({ error: error });
-        } else if (result && result.trim() !== '') {
-            if (argv.verbose) console.log('Nasal output:', result);
-            res.json({ result: result });
-        } else {
-            if (argv.verbose) console.log('No output or error returned');
-            res.json({ error: 'No output or error returned' });
+    
+    // Create a promise for the Nasal execution
+    const execPromise = new Promise((resolve, reject) => {
+        try {
+            const result = nasalLib.nasal_eval(ctx, code, showTime ? 1 : 0);
+            const error = nasalLib.nasal_get_error(ctx);
+            resolve({ result, error });
+        } catch (err) {
+            reject(err);
         }
-    } catch (err) {
-        if (argv.verbose) console.error('Server error:', err);
-        res.status(500).json({ error: err.message });
-    } finally {
-        if (argv.verbose) console.log('Cleaning up Nasal context');
-        nasalLib.nasal_cleanup(ctx);
-    }
+    });
+
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+            reject(new Error('Execution timeout - exceeded 5 seconds'));
+        }, TIMEOUT_MS);
+    });
+
+    // Race between execution and timeout
+    Promise.race([execPromise, timeoutPromise])
+        .then(({ result, error }) => {
+            if (error && error !== 'null') {
+                if (argv.verbose) console.log('Nasal error:', error);
+                res.json({ error: error });
+            } else if (result && result.trim() !== '') {
+                if (argv.verbose) console.log('Nasal output:', result);
+                res.json({ result: result });
+            } else {
+                if (argv.verbose) console.log('No output or error returned');
+                res.json({ error: 'No output or error returned' });
+            }
+        })
+        .catch((err) => {
+            if (argv.verbose) console.error('Server error:', err);
+            res.status(500).json({ error: err.message });
+        })
+        .finally(() => {
+            if (argv.verbose) console.log('Cleaning up Nasal context');
+            nasalLib.nasal_cleanup(ctx);
+        });
 });
 
 const PORT = argv.port || 3000;
@@ -120,4 +142,4 @@ app.listen(PORT, () => {
         console.log('this is an alpha version, verbose logging enabled');
     }
     if (argv.verbose) console.log('Verbose logging enabled');
-}); 
+});
