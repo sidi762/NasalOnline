@@ -110,7 +110,14 @@ app.post('/eval', (req, res) => {
 
 const PORT = argv.port || 3000;
 app.listen(PORT, () => {
+    console.log('Nasal Web Interpreter Version' + argv.version);
+    // Print system date and time, precise to the second
+    console.log('System date and time: ' + new Date().toLocaleString());
     console.log(`Server running on port ${PORT}`);
     console.log(`Visit http://localhost:${PORT} to use the Nasal interpreter`);
-    if (argv.verbose || inAlphaTesting) console.log('Verbose logging enabled');
+    if (inAlphaTesting) {
+        argv.verbose = true;
+        console.log('this is an alpha version, verbose logging enabled');
+    }
+    if (argv.verbose) console.log('Verbose logging enabled');
 }); 
