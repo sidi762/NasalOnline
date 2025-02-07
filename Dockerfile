@@ -33,6 +33,7 @@ RUN apt-get update && \
 # Create non-root user
 RUN addgroup --system --gid 1001 sandbox && \
     adduser --system --uid 1001 --ingroup sandbox sandbox
+    adduser --system --uid 1001 --ingroup sandbox sandbox
 
 # Set up application
 WORKDIR /app/nasal-web-app
