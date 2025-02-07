@@ -45,9 +45,14 @@ const argv = yargs(hideBin(process.argv))
         description: 'Host to run the server on',
         default: 'localhost'
     })
+    .option('version', {
+        alias: 'V',
+        type: 'string',
+        description: 'Version number',
+        default: '0.0.1'
+    })
     .help()
     .alias('help', 'h')
-    .version('0.0.1')
     .argv;
 
 const app = express();
