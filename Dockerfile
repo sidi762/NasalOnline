@@ -33,14 +33,15 @@ RUN apt-get update && \
 # Create non-root user
 RUN addgroup --system --gid 1001 sandbox && \
     adduser --system --uid 1001 --ingroup sandbox sandbox
-    adduser --system --uid 1001 --ingroup sandbox sandbox
 
-# Set up application
-WORKDIR /app/nasal-web-app
-COPY --from=builder /app/nasal-interpreter/ /app/nasal-interpreter/
-COPY --chown=sandbox:sandbox /app/nasal-web-app .
-RUN npm ci --only=production
+# Set the working directory for the backend
+WORKDIR /app/nasal-web-app/
 
+# Copy backend files
+COPY --chown=sandbox:sandbox /app/nasal-web-app /app/nasal-web-app
+RUN npm install
+
+# Expose the port the app runs on
 EXPOSE 3000
 USER sandbox
 CMD ["node", "server.js"]
