@@ -45,14 +45,9 @@ const argv = yargs(hideBin(process.argv))
         description: 'Host to run the server on',
         default: 'localhost'
     })
-    .option('version', {
-        alias: 'V',
-        type: 'string',
-        description: 'Version number',
-        default: '0.0.1'
-    })
     .help()
     .alias('help', 'h')
+    .version('0.0.1')
     .argv;
 
 const app = express();
@@ -137,7 +132,7 @@ app.post('/eval', (req, res) => {
 
 const PORT = argv.port || 3000;
 app.listen(PORT, () => {
-    console.log('Nasal Web Interpreter Version' + argv.version);
+    console.log('Nasal Web Interpreter');
     // Print system date and time, precise to the second
     console.log('System date and time: ' + new Date().toLocaleString());
     console.log(`Server running on port ${PORT}`);
