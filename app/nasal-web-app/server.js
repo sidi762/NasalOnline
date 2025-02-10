@@ -23,6 +23,8 @@ const path = require('path');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const { Worker } = require('worker_threads');
+const bodyParser = require('body-parser');
+const { sanitize } = require('express-xss-sanitizer');
 
 const inAlphaTesting = true;
 
@@ -47,13 +49,15 @@ const argv = yargs(hideBin(process.argv))
     })
     .help()
     .alias('help', 'h')
-    .version('0.0.3')
+    .version('0.0.5')
     .argv;
 
 const app = express();
 
 app.use(express.json());
 app.use(express.static('public'));
+app.use(bodyParser.json({limit:'1kb'}));
+app.use(bodyParser.urlencoded({extended: true, limit:'1kb'}));
 
 const TIMEOUT_MS = 5000; // 5 seconds timeout
 
@@ -78,10 +82,10 @@ app.post('/eval', (req, res) => {
         clearTimeout(timeoutId);
         if (error && error !== 'null') {
             if (argv.verbose) console.log('Nasal error:', error);
-            res.json({ error: error });
+            res.json({ error: sanitize(error) });
         } else if (result && result.trim() !== '') {
             if (argv.verbose) console.log('Nasal output:', result);
-            res.json({ result: result });
+            res.json({ result: sanitize(result) });
         } else {
             if (argv.verbose) console.log('No output or error returned');
             res.json({ error: 'No output or error returned' });
@@ -92,7 +96,7 @@ app.post('/eval', (req, res) => {
     worker.on('error', (err) => {
         clearTimeout(timeoutId);
         if (argv.verbose) console.error('Worker error:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: sanitize(err.message) });
         worker.terminate();
     });
 
