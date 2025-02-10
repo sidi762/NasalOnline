@@ -132,14 +132,15 @@ body {
 }
 
 .editor-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     gap: 20px;
-    margin-bottom: 20px;
+    margin: 20px 0;
+    min-height: 400px;
 }
 
 .code-section, .output-section {
-    /* background: white; */
+    flex: 1;
+    min-width: 0; /* 防止flex子项溢出 */
     background-color: #21252b;
     padding: 20px;
     border-radius: 8px;
@@ -422,4 +423,70 @@ button:disabled {
 
 .timing-checkbox input {
     margin-right: 5px;
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 768px) {
+    .editor-container {
+        flex-direction: column;
+    }
+    
+    .code-section, .output-section {
+        width: 100%;
+        min-height: 300px;
+    }
+    
+    .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .controls button {
+        width: 100%;
+        max-width: 200px;
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    .timing-checkbox {
+        margin-top: 10px;
+    }
+    
+    .examples {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .example-btn {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    /* 调整 CodeMirror 编辑器在移动端的显示 */
+    .CodeMirror {
+        height: 300px;
+        font-size: 14px;
+    }
+    
+    /* 调整输出区域在移动端的显示 */
+    #output {
+        max-height: 300px;
+        font-size: 14px;
+    }
+}
+
+/* 额外的优化：触摸设备上的交互优化 */
+@media (hover: none) {
+    button:active {
+        transform: scale(0.98);
+    }
+    
+    .controls button, .example-btn {
+        padding: 12px;
+        touch-action: manipulation;
+    }
 }
