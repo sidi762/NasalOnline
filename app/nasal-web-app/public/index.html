@@ -290,12 +290,11 @@ for(var i = 0; i <= 5; i += 1) {
                     status.innerHTML = '<span class="status-indicator status-error"></span>';
                     output.innerHTML += `<div class="message error-message">
                         <span class="timestamp">[${timestamp}]</span>
-                        <pre class="terminal-output">${formatErrorMessage(data.error)}</pre>
+                        <pre class="terminal-output">${formatErrorMessage(escapeHtml(data.error))}</pre>
                     </div>`;
                 } else {
                     status.innerHTML = '<span class="status-indicator status-success"></span>';
-                    // easter egg
-                    let result = data.result.trim();
+                    let result = escapeHtml(data.result.trim());
                     if (code.includes('陈逸菲')) {
                         result += '\n❤️❤️❤️爱你！——lsd';
                     }
@@ -310,7 +309,7 @@ for(var i = 0; i <= 5; i += 1) {
                 status.innerHTML = '<span class="status-indicator status-error"></span>';
                 output.innerHTML += `<div class="message error-message">
                     <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
-                    <pre class="terminal-output">Server Error: ${err.message}</pre>
+                    <pre class="terminal-output">Server Error: ${escapeHtml(err.message)}</pre>
                 </div>`;
             } finally {
                 runBtn.disabled = false;
