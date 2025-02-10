@@ -47,7 +47,7 @@ const argv = yargs(hideBin(process.argv))
     })
     .help()
     .alias('help', 'h')
-    .version('0.0.1')
+    .version('0.0.3')
     .argv;
 
 const app = express();
