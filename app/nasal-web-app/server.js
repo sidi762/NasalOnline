@@ -22,7 +22,9 @@ const express = require('express');
 const path = require('path');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
-const koffi = require('koffi');
+const { Worker } = require('worker_threads');
+const bodyParser = require('body-parser');
+const { sanitize } = require('express-xss-sanitizer');
 
 const inAlphaTesting = true;
 
@@ -47,31 +49,15 @@ const argv = yargs(hideBin(process.argv))
     })
     .help()
     .alias('help', 'h')
-    .version('0.0.1')
+    .version('0.0.8')
     .argv;
 
 const app = express();
 
 app.use(express.json());
 app.use(express.static('public'));
-
-let nasalLib;
-try {
-    // First load the library
-    const lib = koffi.load(path.join(__dirname, '../nasal-interpreter/module/libnasal-web.so'));
-    
-    // Then declare the functions explicitly
-    nasalLib = {
-        nasal_init: lib.func('nasal_init', 'void*', []),
-        nasal_cleanup: lib.func('nasal_cleanup', 'void', ['void*']),
-        nasal_eval: lib.func('nasal_eval', 'const char*', ['void*', 'const char*', 'int']),
-        nasal_get_error: lib.func('nasal_get_error', 'const char*', ['void*'])
-    };
-    
-} catch (err) {
-    console.error('Failed to load nasal library:', err);
-    process.exit(1);
-}
+app.use(bodyParser.json({limit:'10kb'}));
+app.use(bodyParser.urlencoded({extended: true, limit:'10kb'}));
 
 const TIMEOUT_MS = 5000; // 5 seconds timeout
 
@@ -86,48 +72,35 @@ app.post('/eval', (req, res) => {
         console.log('Show time:', showTime);
     }
 
-    const ctx = nasalLib.nasal_init();
-    
-    // Create a promise for the Nasal execution
-    const execPromise = new Promise((resolve, reject) => {
-        try {
-            const result = nasalLib.nasal_eval(ctx, code, showTime ? 1 : 0);
-            const error = nasalLib.nasal_get_error(ctx);
-            resolve({ result, error });
-        } catch (err) {
-            reject(err);
+    const worker = new Worker(path.join(__dirname, 'worker.js'));
+    const timeoutId = setTimeout(() => {
+        worker.terminate();
+        res.status(408).json({ error: 'Execution timeout - exceeded 5 seconds' });
+    }, TIMEOUT_MS);
+
+    worker.on('message', ({ result, error }) => {
+        clearTimeout(timeoutId);
+        if (error && error !== 'null') {
+            if (argv.verbose) console.log('Nasal error:', error);
+            res.json({ error: error });
+        } else if (result && result.trim() !== '') {
+            if (argv.verbose) console.log('Nasal output:', result);
+            res.json({ result: sanitize(result) });
+        } else {
+            if (argv.verbose) console.log('No output or error returned');
+            res.json({ error: 'No output or error returned' });
         }
+        worker.terminate();
     });
 
-    // Create a timeout promise
-    const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-            reject(new Error('Execution timeout - exceeded 5 seconds'));
-        }, TIMEOUT_MS);
+    worker.on('error', (err) => {
+        clearTimeout(timeoutId);
+        if (argv.verbose) console.error('Worker error:', err);
+        res.status(500).json({ error: err.message });
+        worker.terminate();
     });
 
-    // Race between execution and timeout
-    Promise.race([execPromise, timeoutPromise])
-        .then(({ result, error }) => {
-            if (error && error !== 'null') {
-                if (argv.verbose) console.log('Nasal error:', error);
-                res.json({ error: error });
-            } else if (result && result.trim() !== '') {
-                if (argv.verbose) console.log('Nasal output:', result);
-                res.json({ result: result });
-            } else {
-                if (argv.verbose) console.log('No output or error returned');
-                res.json({ error: 'No output or error returned' });
-            }
-        })
-        .catch((err) => {
-            if (argv.verbose) console.error('Server error:', err);
-            res.status(500).json({ error: err.message });
-        })
-        .finally(() => {
-            if (argv.verbose) console.log('Cleaning up Nasal context');
-            nasalLib.nasal_cleanup(ctx);
-        });
+    worker.postMessage({ code, showTime });
 });
 
 const PORT = argv.port || 3000;
