@@ -22,7 +22,7 @@ const express = require('express');
 const path = require('path');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
-const { Worker } = require('worker_threads');
+const { fork } = require('child_process');
 const bodyParser = require('body-parser');
 const { sanitize } = require('express-xss-sanitizer');
 
@@ -72,35 +72,47 @@ app.post('/eval', (req, res) => {
         console.log('Show time:', showTime);
     }
 
-    const worker = new Worker(path.join(__dirname, 'worker.js'));
+    // Create child process instead of worker thread
+    const child = fork(path.join(__dirname, 'worker.js'));
+    let responded = false;
+
     const timeoutId = setTimeout(() => {
-        worker.terminate();
-        res.status(408).json({ error: 'Execution timeout - exceeded 5 seconds' });
+        if (!responded) {
+            responded = true;
+            child.kill('SIGTERM');
+            res.status(408).json({ error: 'Execution timeout - exceeded 5 seconds' });
+        }
     }, TIMEOUT_MS);
 
-    worker.on('message', ({ result, error }) => {
+    child.on('message', (message) => {
+        if (responded) return;
+        responded = true;
         clearTimeout(timeoutId);
-        if (error && error !== 'null') {
-            if (argv.verbose) console.log('Nasal error:', error);
-            res.json({ error: error });
-        } else if (result && result.trim() !== '') {
-            if (argv.verbose) console.log('Nasal output:', result);
-            res.json({ result: sanitize(result) });
+        if (message.error && message.error !== 'null') {
+            if (argv.verbose) console.log('Nasal error:', message.error);
+            res.json({ error: message.error });
+        } else if (message.result && message.result.trim() !== '') {
+            if (argv.verbose) console.log('Nasal output:', message.result);
+            res.json({ result: sanitize(message.result) });
         } else {
             if (argv.verbose) console.log('No output or error returned');
             res.json({ error: 'No output or error returned' });
         }
-        worker.terminate();
+        // Ensure child process exits
+        child.kill();
     });
 
-    worker.on('error', (err) => {
+    child.on('error', (err) => {
+        if (responded) return;
+        responded = true;
         clearTimeout(timeoutId);
-        if (argv.verbose) console.error('Worker error:', err);
+        if (argv.verbose) console.error('Child process error:', err);
         res.status(500).json({ error: err.message });
-        worker.terminate();
+        child.kill();
     });
 
-    worker.postMessage({ code, showTime });
+    // Send evaluation data to child process
+    child.send({ code, showTime });
 });
 
 const PORT = argv.port || 3000;
