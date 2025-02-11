@@ -25,7 +25,7 @@ const { hideBin } = require('yargs/helpers');
 const { fork } = require('child_process');
 const bodyParser = require('body-parser');
 const { sanitize } = require('express-xss-sanitizer');
-const helmet = require('helmet');
+// const helmet = require('helmet');
 const compression = require('compression');
 
 const inAlphaTesting = true;
@@ -55,8 +55,6 @@ const argv = yargs(hideBin(process.argv))
     .argv;
 
 const app = express();
-
-app.use(helmet());
 app.use(compression());
 
 app.use(express.json());
