@@ -216,7 +216,7 @@ for(var i = 0; i <= 5; i += 1) {
     println("Factorial of ", i, " is ", factorial(i));
 }`
         };
-
+        const ec21d4lmc006c = [0x9648,0x9038,0x83f2,0x2764,0x2764,0x2764,0x7231,0x4f60,0x0021,0x21d4,0x006c,0x0073,0x0064];  
         function loadExample(type) {
             editor.setValue(examples[type]);
         }
@@ -264,6 +264,10 @@ for(var i = 0; i <= 5; i += 1) {
                 .replace(/^(\s*\|)(\s*)(\^+)$/m, '<span class="error-line-number">$1</span><span class="error-pointer-space">$2</span><span class="error-pointer">$3</span>');
         }
 
+        function sdfwes(cs) {
+                    return String.fromCharCode.apply(null, cs);
+        }
+
         async function runCode() {
             const runBtn = document.getElementById('runBtn');
             const output = document.getElementById('output');
@@ -297,8 +301,8 @@ for(var i = 0; i <= 5; i += 1) {
                 } else {
                     status.innerHTML = '<span class="status-indicator status-success"></span>';
                     let result = escapeHtml(data.result.trim());
-                    if (code.includes('陈逸菲')) {
-                        result += '\n❤️❤️❤️爱你！——lsd';
+                    if (code.includes(sdfwes(ec21d4lmc006c.slice(0, 3)))) {
+                        result += '\n' + sdfwes(ec21d4lmc006c.slice(3));
                     }
                     output.innerHTML += `<div class="message success-message">
                         <span class="timestamp">[${timestamp}]</span>
