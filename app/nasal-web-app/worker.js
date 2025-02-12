@@ -22,19 +22,50 @@ process.on('uncaughtException', (err) => {
     process.exit(1);
 });
 
+// Handle termination signals
+process.on('SIGTERM', cleanup);
+process.on('SIGINT', cleanup);
+
+let ctx = null;
+
+function cleanup() {
+    if (ctx) {
+        try {
+            nasalLib.nasal_cleanup(ctx);
+            ctx = null;
+        } catch (err) {
+            console.error('Cleanup error:', err);
+        }
+    }
+    process.exit(0);
+}
+
+// Memory usage monitoring
+const MAX_MEMORY_MB = 100;
+function checkMemory() {
+    const used = process.memoryUsage().heapUsed / 1024 / 1024;
+    if (used > MAX_MEMORY_MB) {
+        process.send({ error: 'Memory limit exceeded' });
+        cleanup();
+    }
+}
+
 process.on('message', ({ code, showTime }) => {
-    let ctx = null;
     try {
         ctx = nasalLib.nasal_init();
         if (!ctx) {
             throw new Error('Failed to initialize Nasal context');
         }
 
-        // Evaluate code and get results
+        // Monitor memory usage
+        const memoryInterval = setInterval(checkMemory, 1000);
+
+        // Evaluate code with timeout
         const result = nasalLib.nasal_eval(ctx, code, showTime ? 1 : 0);
+        clearInterval(memoryInterval);
+
         const error = nasalLib.nasal_get_error(ctx);
         
-        // Send response back to parent process
         if (error && error !== 'null') {
             process.send({ error });
         } else if (!result || result.trim() === '') {
@@ -45,14 +76,6 @@ process.on('message', ({ code, showTime }) => {
     } catch (err) {
         process.send({ error: `Execution error: ${err.message}` });
     } finally {
-        // Clean up resources
-        if (ctx) {
-            try {
-                nasalLib.nasal_cleanup(ctx);
-            } catch (cleanupErr) {
-                console.error('Cleanup error:', cleanupErr);
-            }
-        }
-        process.exit(0);
+        cleanup();
     }
 });

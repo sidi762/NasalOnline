@@ -75,9 +75,34 @@ app.post('/eval', (req, res) => {
         console.log('Show time:', showTime);
     }
 
-    // Create child process instead of worker thread
-    const child = fork(path.join(__dirname, 'worker.js'));
+    // Fork the worker process with stdio stream for stderr collection
+    const child = fork(path.join(__dirname, 'worker.js'), {
+        stdio: ['pipe', 'pipe', 'pipe', 'ipc']
+    });
     let responded = false;
+    let stderrData = '';
+    let stdoutData = '';
+
+    // Collect stderr output from the child process
+    child.stderr.on('data', (data) => {
+        stderrData += data.toString();
+    });
+
+    // Collect stdout output from the child process
+    child.stdout.on('data', (data) => {
+        stdoutData += data.toString();
+    });
+
+    // Listen for the stderr stream closing (indicating that the native error was flushed)
+    child.stderr.on('close', () => {
+        if (!responded) {
+            responded = true;
+            clearTimeout(timeoutId);
+            let errorMsg = stderrData + stdoutData;
+            // Use collected stderr output if available.
+            res.status(500).json({ error: errorMsg || 'Worker exited with possible runtime error' });
+        }
+    });
 
     const timeoutId = setTimeout(() => {
         if (!responded) {
@@ -98,11 +123,17 @@ app.post('/eval', (req, res) => {
             if (argv.verbose) console.log('Nasal output:', message.result);
             res.json({ result: sanitize(message.result) });
         } else {
-            if (argv.verbose) console.log('No output or error returned');
-            res.json({ error: 'No output or error returned' });
+            res.json({ result: '' });
         }
-        // Ensure child process exits
-        child.kill();
+    });
+
+    child.on('exit', (exitCode, signal) => {
+        if (!responded) {
+            responded = true;
+            clearTimeout(timeoutId);
+            const errorMsg = stderrData || (signal ? `Worker terminated by signal: ${signal}` : `Worker exited with code: ${exitCode}`);
+            res.status(500).json({ error: errorMsg });
+        }
     });
 
     child.on('error', (err) => {
@@ -114,7 +145,7 @@ app.post('/eval', (req, res) => {
         child.kill();
     });
 
-    // Send evaluation data to child process
+    // Send data to the worker process
     child.send({ code, showTime });
 });
 
