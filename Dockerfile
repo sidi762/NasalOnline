@@ -1,5 +1,5 @@
 # Build stage
-FROM debian:stable-slim AS builder
+FROM debian:bookworm-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && \
@@ -19,7 +19,7 @@ RUN mkdir build && \
     make all
 
 # Runtime stage
-FROM node:23-bookworm-slim
+FROM node:24.22.1-bookworm-slim
 
 # Install runtime dependencies
 RUN apt-get update && \
@@ -38,7 +38,7 @@ RUN addgroup --system --gid 1001 sandbox && \
 WORKDIR /app/nasal-web-app
 COPY --from=builder /app/nasal-interpreter/ /app/nasal-interpreter/
 COPY --chown=sandbox:sandbox /app/nasal-web-app .
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 EXPOSE 3000
 USER sandbox
